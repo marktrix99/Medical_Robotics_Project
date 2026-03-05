@@ -1,0 +1,61 @@
+% Define some test values
+global m1 m2 lc1 lc2 I1czz I2czz l1 l2 q0 dq0 g tau Fv X_d Y_d Vx_d Vy_d Fx_ext Fy_ext X_min X_max Y_min Y_max K_wall
+m1 = 1.0;   % Mass of link 1
+m2 = 0.8;   % Mass of link 2
+l1 = 1.0;   % Length of link 1
+l2 = 0.8;   % Length of link 2
+lc1 = 0.5;  % Distance to CoM of link 1
+lc2 = 0.4;  % Distance to CoM of link 2
+I1czz = (1/12) * m1 * l1^2;  % Moment of inertia for link 1
+I2czz = (1/12) * m2 * l2^2;  % Moment of inertia for link 2
+g = 9.81;
+tau = [0;0];
+Fv = 0.04; %viskoznost
+Fc = [0; -10]; %[10;0] [10;-10] 
+
+% Test with specific values for q0
+q0 = [pi/2; pi/4];  % Joint angles
+dq0 = [0;0];
+
+
+% Call the function TEST
+Mq = InertiaMatrix(q0)
+
+Cq = CoriolisMatrix(q0,dq0)
+
+Gq = GravityVector(q0)
+
+J = Jacobian_ee(q0)
+
+Acc = computeAcceleration([q0;dq0;tau])
+
+% Define test inputs
+X_d = 0.25;    % Desired x position (m)
+Y_d = 0.2;     % Desired y position (m)
+Vx_d = 0.0;    % Desired x velocity (m/s)
+Vy_d = 0.0;    % Desired y velocity (m/s)
+
+q1 = pi / 4;   % Joint angle 1 (rad)
+q2 = pi / 6;   % Joint angle 2 (rad)
+dq1 = 0.1;     % Joint velocity 1 (rad/s)
+dq2 = 0.05;    % Joint velocity 2 (rad/s)
+
+Fx_ext = 5;    % External force in x direction (N)
+Fy_ext = -3;   % External force in y direction (N)
+
+% Combine inputs into a single vector
+inputs = [X_d, Y_d, Vx_d, Vy_d, q1, q2, dq1, dq2, Fx_ext, Fy_ext];
+
+% Call the ComplianceControl function
+tau = ComplianceControl(inputs);
+
+% Display results
+disp('Computed joint torques (tau):');
+disp(tau);
+
+%Forward Kinematics
+[X_actual, Y_actual] = ForwardKinematics(q0);
+
+%Virtual Wall 
+
+ 

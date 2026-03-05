@@ -1,0 +1,37 @@
+function tau = AdmittanceControl(inputs)
+    % AdmittanceControl - Computes joint torques using admittance control
+    % Inputs:
+    %   inputs - A vector containing:
+    %       inputs(3:4) - Current joint angles [q1; q2]
+    %       inputs(5:6) - Current joint velocities [dq1; dq2]
+    %       inputs(1:2) - Desired Cartesian position [x_des; y_des]
+    % Output:
+    %   tau - Joint torques [tau1; tau2]
+
+    global Ma Da Ka F_ext
+
+    % Extract inputs
+    x_des = inputs(1:2); % Desired Cartesian position [x_des; y_des]
+    q = inputs(3:4);    % Current joint angles [q1; q2]
+    dq = inputs(5:6);   % Current joint velocities [dq1; dq2]
+
+    % Step 1: Compute the current end-effector position using forward kinematics
+    x = ForwardKinematics(q); % [x; y]
+
+    % Step 2: Compute Cartesian velocity
+    J = Jacobian_ee(q);  % Jacobian of the end-effector
+    x_dot = J * dq;      % Cartesian velocity [vx; vy]
+
+    % Step 3: Compute position error
+    e_x = x_des - x;     % Position error in Cartesian space
+
+    % Step 4: Compute desired Cartesian acceleration
+    x_ddot_des = Ma \ (F_ext - Da * x_dot - Ka * e_x);
+
+    % Step 5: Compute desired Cartesian force
+    F_des = Ma * x_ddot_des;
+
+    % Step 6: Compute joint torques
+    G = GravityVector(q); % Gravity compensation torques
+    tau = J' * F_des + G; % Joint torques
+end
